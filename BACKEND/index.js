@@ -4,33 +4,28 @@ import { config } from 'dotenv';
 import morgan from 'morgan';
 import 'dotenv/config'
 import mongoose from 'mongoose';
+import { ProductModel, CreateNewProduct } from './models/product.js';
+import {  CreateNewUser} from './models/user.js';
 
-const api = process.env.API_URL;
+
+export const api = process.env.API_URL;
 const app = express();
 app.use(bodyParser.json());
 app.use(morgan('tiny')); // log requests
 
+app.post(`/register`, CreateNewUser);
+
+app.post(`${api}/admin/createproduct`, CreateNewProduct);
 
 
-app.get(`${api}/products`, (req, res) => {
-    const product = {
-        id: 1,
-        name: 'hair dresser',
-        image: 'some_url'
+app.get(`${api}/products`, async (req, res) => {
+    const productList = await ProductModel.find();
+    if (!productList) {
+        res.status(500).json({ success: false })
     }
-    res.send(product);
-}
-);
-
-
-
-app.post(`${api}/products`, (req, res) => {
-    const newProduct = req.body;
-    console.log(newProduct);
-    res.send(newProduct);
-}
-);
-
+    res.send(productList);
+});
+    
 
 mongoose.connect(process.env.CONNECTION_STRING,{
     useNewUrlParser: true,
@@ -45,9 +40,10 @@ mongoose.connect(process.env.CONNECTION_STRING,{
     }
 );
 
-
 app.listen(4000, () => {
     console.log(api);
-    console.log('Server started on port 9999!');
+    console.log('Server started on port 4000!');
     }
 );
+
+
